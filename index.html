@@ -2,18 +2,18 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SERV CASA JP - Pequenos reparos, instalações e manutenção residencial em João Pessoa. Atendimento rápido e profissional. Hidráulica, elétrica, montagem de móveis, telhados e muito mais.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="SERV CASA JP - Pequenos reparos, instalações e manutenção residencial em João Pessoa. Orçamento grátis e rápido. Hidráulica, elétrica, montagem de móveis, telhados e muito mais.">
     <meta name="keywords" content="reparos João Pessoa, manutenção residencial João Pessoa, hidráulica João Pessoa, elétrica João Pessoa, montagem de móveis João Pessoa, telhados João Pessoa, pequenos reparos, SERV CASA JP">
     <meta name="robots" content="index, follow">
     <meta name="author" content="SERV CASA JP">
     <meta property="og:title" content="SERV CASA JP - Pequenos Reparos e Manutenção Residencial em João Pessoa">
-    <meta property="og:description" content="Problema resolvido, tranquilidade garantida. Atendimento rápido e profissional em toda João Pessoa.">
+    <meta property="og:description" content="Problema resolvido, tranquilidade garantida. Orçamento grátis e rápido em toda João Pessoa.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="pt_BR">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SERV CASA JP - Reparos e Manutenção em João Pessoa">
-    <meta name="twitter:description" content="Problema resolvido, tranquilidade garantida. Atendimento rápido e profissional.">
+    <meta name="twitter:description" content="Orçamento grátis e rápido. Atendimento profissional.">
     <title>SERV CASA JP - Pequenos Reparos e Manutenção Residencial em João Pessoa</title>
 
     <!-- Font Awesome 6 -->
@@ -30,7 +30,7 @@
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
             "name": "SERV CASA JP",
-            "description": "Pequenos reparos, instalações e manutenção residencial em João Pessoa.",
+            "description": "Pequenos reparos, instalações e manutenção residencial em João Pessoa. Orçamento grátis e rápido.",
             "telephone": "+5583999598581",
             "address": {
                 "@type": "PostalAddress",
@@ -50,12 +50,12 @@
 
     <style>
         :root {
-            --primary: #0a1628;
-            --primary-light: #111d35;
-            --primary-medium: #152240;
-            --accent: #f5a623;
-            --accent-hover: #e59400;
-            --accent-glow: rgba(245, 166, 35, 0.35);
+            --primary: #143F85;
+            --primary-light: #1a4fa0;
+            --primary-medium: #0e2f63;
+            --accent: #DDE025;
+            --accent-hover: #c9cc1f;
+            --accent-glow: rgba(221, 224, 37, 0.35);
             --white: #ffffff;
             --off-white: #f8f9fa;
             --gray-50: #f9fafb;
@@ -78,7 +78,7 @@
             --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.08);
             --shadow-xl: 0 30px 70px rgba(0, 0, 0, 0.2), 0 12px 30px rgba(0, 0, 0, 0.1);
-            --shadow-accent: 0 8px 30px rgba(245, 166, 35, 0.3);
+            --shadow-accent: 0 8px 30px rgba(221, 224, 37, 0.3);
             --radius-sm: 8px;
             --radius: 12px;
             --radius-lg: 16px;
@@ -122,6 +122,7 @@
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* ============ UTILITIES ============ */
@@ -188,6 +189,7 @@
             letter-spacing: 0.01em;
             position: relative;
             overflow: hidden;
+            min-height: 48px;
         }
 
         .btn-primary {
@@ -198,7 +200,7 @@
         .btn-primary:hover {
             background: var(--accent-hover);
             transform: translateY(-3px);
-            box-shadow: 0 14px 35px rgba(245, 166, 35, 0.4);
+            box-shadow: 0 14px 35px rgba(221, 224, 37, 0.4);
         }
 
         .btn-outline {
@@ -292,7 +294,7 @@
 
         /* Tooltip */
         .floating-whatsapp::after {
-            content: 'Chamar no WhatsApp';
+            content: 'Orçamento Grátis';
             position: absolute;
             right: 72px;
             background: var(--gray-800);
@@ -327,10 +329,10 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(160deg,
-                    rgba(10, 22, 40, 0.92) 0%,
-                    rgba(10, 22, 40, 0.85) 30%,
-                    rgba(17, 29, 53, 0.82) 60%,
-                    rgba(10, 22, 40, 0.9) 100%);
+                    rgba(20, 63, 133, 0.92) 0%,
+                    rgba(20, 63, 133, 0.85) 30%,
+                    rgba(14, 47, 99, 0.82) 60%,
+                    rgba(20, 63, 133, 0.9) 100%);
             z-index: 1;
         }
         .hero-particles {
@@ -339,8 +341,8 @@
             z-index: 2;
             pointer-events: none;
             background:
-                radial-gradient(circle at 20% 30%, rgba(245, 166, 35, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 75% 60%, rgba(245, 166, 35, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 20% 30%, rgba(221, 224, 37, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 75% 60%, rgba(221, 224, 37, 0.06) 0%, transparent 45%),
                 radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 40%);
         }
         .hero-content {
@@ -365,8 +367,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(245, 166, 35, 0.18);
-            border: 1px solid rgba(245, 166, 35, 0.35);
+            background: rgba(221, 224, 37, 0.18);
+            border: 1px solid rgba(221, 224, 37, 0.35);
             color: var(--accent);
             padding: 8px 18px;
             border-radius: 50px;
@@ -492,6 +494,14 @@
             .floating-whatsapp::after {
                 display: none;
             }
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-buttons .btn {
+                width: 100%;
+                max-width: 320px;
+            }
         }
 
         /* ============ SERVICES SECTION ============ */
@@ -533,7 +543,7 @@
         .service-card:hover {
             transform: translateY(-8px);
             box-shadow: var(--shadow-lg);
-            border-color: rgba(245, 166, 35, 0.2);
+            border-color: rgba(221, 224, 37, 0.2);
         }
         .service-card:hover::before {
             transform: scaleX(1);
@@ -550,13 +560,13 @@
             font-size: 28px;
             color: var(--accent);
             transition: all var(--transition-bounce);
-            box-shadow: 0 6px 20px rgba(10, 22, 40, 0.25);
+            box-shadow: 0 6px 20px rgba(20, 63, 133, 0.25);
         }
         .service-card:hover .service-icon {
             background: var(--accent);
             color: var(--primary);
             transform: scale(1.08);
-            box-shadow: 0 10px 28px rgba(245, 166, 35, 0.4);
+            box-shadow: 0 10px 28px rgba(221, 224, 37, 0.4);
         }
         .service-card h3 {
             font-size: var(--font-xl);
@@ -635,7 +645,7 @@
         }
         .differential-item:hover {
             background: var(--white);
-            border-color: rgba(245, 166, 35, 0.25);
+            border-color: rgba(221, 224, 37, 0.25);
             box-shadow: var(--shadow-md);
             transform: translateX(4px);
         }
@@ -751,7 +761,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            box-shadow: 0 10px 30px rgba(245, 166, 35, 0.5);
+            box-shadow: 0 10px 30px rgba(221, 224, 37, 0.5);
             position: relative;
             z-index: 2;
         }
@@ -774,7 +784,7 @@
             left: calc(16% + 32px);
             right: calc(16% + 32px);
             height: 3px;
-            background: linear-gradient(90deg, var(--accent), rgba(245, 166, 35, 0.4), var(--accent));
+            background: linear-gradient(90deg, var(--accent), rgba(221, 224, 37, 0.4), var(--accent));
             border-radius: 4px;
             z-index: 1;
             opacity: 0.6;
@@ -844,7 +854,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(10, 22, 40, 0.55) 0%, transparent 50%);
+            background: linear-gradient(to top, rgba(20, 63, 133, 0.55) 0%, transparent 50%);
             opacity: 0;
             transition: opacity var(--transition);
             pointer-events: none;
@@ -927,7 +937,7 @@
         }
         .testimonial-card:hover {
             box-shadow: var(--shadow-md);
-            border-color: rgba(245, 166, 35, 0.2);
+            border-color: rgba(221, 224, 37, 0.2);
             transform: translateY(-3px);
         }
         .testimonial-stars {
@@ -1011,8 +1021,8 @@
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(circle at 30% 50%, rgba(245, 166, 35, 0.1) 0%, transparent 55%),
-                radial-gradient(circle at 70% 40%, rgba(245, 166, 35, 0.07) 0%, transparent 50%);
+                radial-gradient(circle at 30% 50%, rgba(221, 224, 37, 0.1) 0%, transparent 55%),
+                radial-gradient(circle at 70% 40%, rgba(221, 224, 37, 0.07) 0%, transparent 50%);
             pointer-events: none;
         }
         .cta-final-content {
@@ -1040,7 +1050,7 @@
 
         /* ============ FOOTER ============ */
         .footer {
-            background: #060e1a;
+            background: #0c2850;
             color: rgba(255, 255, 255, 0.7);
             padding: 48px 0 24px;
         }
@@ -1188,7 +1198,7 @@
 <body>
 
     <!-- ==================== FLOATING WHATSAPP ==================== -->
-    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20um%20or%C3%A7amento%20com%20a%20SERV%20CASA%20JP." target="_blank" rel="noopener noreferrer" class="floating-whatsapp" aria-label="Chamar no WhatsApp" title="Chamar no WhatsApp">
+    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20gr%C3%A1tis%20e%20r%C3%A1pido!" target="_blank" rel="noopener noreferrer" class="floating-whatsapp" aria-label="Orçamento grátis pelo WhatsApp" title="Orçamento Grátis">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
@@ -1215,15 +1225,15 @@
                 <p class="hero-tagline">Problema resolvido, tranquilidade garantida.</p>
             </div>
             <div class="hero-buttons fade-in-up delay-4">
-                <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20um%20or%C3%A7amento%20com%20a%20SERV%20CASA%20JP." target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-                    <i class="fa-brands fa-whatsapp"></i> Chamar no WhatsApp
+                <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20quero%20um%20or%C3%A7amento%20gr%C3%A1tis%20e%20r%C3%A1pido!" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+                    <i class="fa-brands fa-whatsapp"></i> Orçamento Grátis
                 </a>
-                <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20um%20or%C3%A7amento%20com%20a%20SERV%20CASA%20JP." target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-lg">
+                <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20meu%20or%C3%A7amento%20gr%C3%A1tis!" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-lg">
                     <i class="fa-solid fa-file-invoice"></i> Solicitar orçamento
                 </a>
             </div>
             <div class="hero-quick-info fade-in-up delay-5">
-                <span><i class="fa-solid fa-circle-check"></i> Atendimento rápido</span>
+                <span><i class="fa-solid fa-circle-check"></i> Orçamento grátis e rápido</span>
                 <span><i class="fa-solid fa-circle-check"></i> Profissional qualificado</span>
                 <span><i class="fa-solid fa-circle-check"></i> Residencial e comercial</span>
                 <span><i class="fa-solid fa-circle-check"></i> Orçamento facilitado</span>
@@ -1237,43 +1247,43 @@
             <div class="text-center fade-in-up">
                 <span class="section-label">Nossos Serviços</span>
                 <h2 class="section-title mx-auto">Soluções Completas para Sua Casa</h2>
-                <p class="section-subtitle mx-auto">Profissionais qualificados e atendimento rápido em toda João Pessoa.</p>
+                <p class="section-subtitle mx-auto">Profissionais qualificados e atendimento rápido em toda João Pessoa. Orçamento grátis!</p>
             </div>
             <div class="services-grid">
                 <!-- Hidráulica -->
                 <div class="service-card fade-in-up delay-1">
                     <div class="service-icon"><i class="fa-solid fa-faucet-drip"></i></div>
                     <h3>Hidráulica</h3>
-                    <p>Vazamentos, torneiras, registros, sifões e reparos em geral.</p>
-                    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20preciso%20de%20servi%C3%A7o%20de%20hidr%C3%A1ulica." target="_blank" rel="noopener noreferrer" class="btn-sm">Solicitar serviço</a>
+                    <p>Vazamentos, torneiras, registros, sifões e reparos.</p>
+                    <a href="https://wa.me/5583999598581?text=Or%C3%A7amento%20gr%C3%A1tis%20para%20hidr%C3%A1ulica" target="_blank" rel="noopener noreferrer" class="btn-sm">Orçamento Grátis</a>
                 </div>
                 <!-- Elétrica -->
                 <div class="service-card fade-in-up delay-2">
                     <div class="service-icon"><i class="fa-solid fa-bolt"></i></div>
                     <h3>Elétrica</h3>
-                    <p>Tomadas, interruptores, sensores, luminárias e instalações.</p>
-                    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20preciso%20de%20servi%C3%A7o%20de%20el%C3%A9trica." target="_blank" rel="noopener noreferrer" class="btn-sm">Solicitar serviço</a>
+                    <p>Tomadas, interruptores, sensores, luminárias.</p>
+                    <a href="https://wa.me/5583999598581?text=Or%C3%A7amento%20gr%C3%A1tis%20para%20el%C3%A9trica" target="_blank" rel="noopener noreferrer" class="btn-sm">Orçamento Grátis</a>
                 </div>
                 <!-- Montagem -->
                 <div class="service-card fade-in-up delay-3">
                     <div class="service-icon"><i class="fa-solid fa-couch"></i></div>
                     <h3>Montagem</h3>
                     <p>Móveis, prateleiras, racks e montagens em geral.</p>
-                    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20preciso%20de%20servi%C3%A7o%20de%20montagem." target="_blank" rel="noopener noreferrer" class="btn-sm">Solicitar serviço</a>
+                    <a href="https://wa.me/5583999598581?text=Or%C3%A7amento%20gr%C3%A1tis%20para%20montagem" target="_blank" rel="noopener noreferrer" class="btn-sm">Orçamento Grátis</a>
                 </div>
                 <!-- Reparos em Geral -->
                 <div class="service-card fade-in-up delay-4">
                     <div class="service-icon"><i class="fa-solid fa-hammer"></i></div>
                     <h3>Reparos em Geral</h3>
                     <p>Ajustes, consertos, manutenção preventiva e corretiva.</p>
-                    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20preciso%20de%20reparos%20em%20geral." target="_blank" rel="noopener noreferrer" class="btn-sm">Solicitar serviço</a>
+                    <a href="https://wa.me/5583999598581?text=Or%C3%A7amento%20gr%C3%A1tis%20para%20reparos%20em%20geral" target="_blank" rel="noopener noreferrer" class="btn-sm">Orçamento Grátis</a>
                 </div>
                 <!-- Telhados -->
                 <div class="service-card fade-in-up delay-5">
                     <div class="service-icon"><i class="fa-solid fa-house-chimney-crack"></i></div>
                     <h3>Telhados</h3>
-                    <p>Troca de telhas, lavagem, impermeabilização e aplicação de manta.</p>
-                    <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20preciso%20de%20servi%C3%A7o%20em%20telhado." target="_blank" rel="noopener noreferrer" class="btn-sm">Solicitar serviço</a>
+                    <p>Troca de telhas, lavagem, impermeabilização, manta.</p>
+                    <a href="https://wa.me/5583999598581?text=Or%C3%A7amento%20gr%C3%A1tis%20para%20telhado" target="_blank" rel="noopener noreferrer" class="btn-sm">Orçamento Grátis</a>
                 </div>
             </div>
         </div>
@@ -1319,8 +1329,8 @@
                 <div class="differential-item fade-in-up delay-3">
                     <div class="differential-icon"><i class="fa-solid fa-check"></i></div>
                     <div class="differential-text">
-                        <h4>Orçamento rápido</h4>
-                        <p>Envie sua solicitação e receba uma estimativa ágil.</p>
+                        <h4>Orçamento rápido e grátis</h4>
+                        <p>Envie sua solicitação e receba uma estimativa sem custo.</p>
                     </div>
                 </div>
                 <div class="differential-item fade-in-up delay-3">
@@ -1356,8 +1366,8 @@
                     <div class="stat-label">Clientes satisfeitos</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">24h</div>
-                    <div class="stat-label">Atendimento rápido</div>
+                    <div class="stat-number">Grátis</div>
+                    <div class="stat-label">Orçamento rápido</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">100%</div>
@@ -1373,7 +1383,7 @@
             <div class="text-center fade-in-up">
                 <span class="section-label" style="color: var(--accent);">Como funciona</span>
                 <h2 class="section-title mx-auto">Simples, Rápido e Seguro</h2>
-                <p class="section-subtitle mx-auto">Em apenas 3 passos, seu problema está resolvido.</p>
+                <p class="section-subtitle mx-auto">Em apenas 3 passos, seu problema está resolvido. Orçamento grátis!</p>
             </div>
             <div class="how-steps">
                 <div class="how-step fade-in-up delay-1">
@@ -1384,7 +1394,7 @@
                 <div class="how-step fade-in-up delay-2">
                     <div class="how-step-number">2</div>
                     <h4>Recebe orçamento rápido</h4>
-                    <p>Analisamos sua necessidade e enviamos uma estimativa justa.</p>
+                    <p>Analisamos sua necessidade e enviamos uma estimativa justa e sem compromisso.</p>
                 </div>
                 <div class="how-step fade-in-up delay-3">
                     <div class="how-step-number">3</div>
@@ -1405,23 +1415,23 @@
             </div>
             <div class="gallery-grid">
                 <div class="gallery-item fade-in-up delay-1">
-                    <img src="https://img77.uenicdn.com/image/upload/v1537288393/service_images/shutterstock_382946095.jpg" alt="Manutenção residencial profissional - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #152240, #0a1628)'; this.style.minHeight='300px';">
+                    <img src="https://img77.uenicdn.com/image/upload/v1537288393/service_images/shutterstock_382946095.jpg" alt="Manutenção residencial profissional - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #143F85, #0e2f63)'; this.style.minHeight='300px';">
                     <div class="gallery-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
                 </div>
                 <div class="gallery-item fade-in-up delay-2">
-                    <img src="https://www.cartaodevisitasvirtual.com.br/admin/uploads/clientes/galeria/1707420946.jpg" alt="Serviço de reparos - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #1a2a45, #0d1b30)'; this.style.minHeight='220px';">
+                    <img src="https://www.cartaodevisitasvirtual.com.br/admin/uploads/clientes/galeria/1707420946.jpg" alt="Serviço de reparos - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #1a4fa0, #0e2f63)'; this.style.minHeight='220px';">
                     <div class="gallery-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
                 </div>
                 <div class="gallery-item fade-in-up delay-3">
-                    <img src="https://pereiramontagemdemoveis.com.br/wp-content/uploads/2024/06/Empresa-de-montagem-de-moveis-na-sua-localidade-1024x683.webp" alt="Montagem de móveis profissional - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #1e3050, #0f1f35)'; this.style.minHeight='220px';">
+                    <img src="https://pereiramontagemdemoveis.com.br/wp-content/uploads/2024/06/Empresa-de-montagem-de-moveis-na-sua-localidade-1024x683.webp" alt="Montagem de móveis profissional - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #143F85, #0e2f63)'; this.style.minHeight='220px';">
                     <div class="gallery-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
                 </div>
                 <div class="gallery-item fade-in-up delay-4">
-                    <img src="https://meufrete.net.br/wp-content/uploads/2024/01/13-Ideias-de-prestacao-de-servico-com-opcoes-criativas.jpg" alt="Prestação de serviço residencial - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #162845, #0a1830)'; this.style.minHeight='220px';">
+                    <img src="https://meufrete.net.br/wp-content/uploads/2024/01/13-Ideias-de-prestacao-de-servico-com-opcoes-criativas.jpg" alt="Prestação de serviço residencial - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #1a4fa0, #0e2f63)'; this.style.minHeight='220px';">
                     <div class="gallery-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
                 </div>
                 <div class="gallery-item fade-in-up delay-5">
-                    <img src="https://servico24horas.com.br/assets/images-2/service/telhadista-servico9.jpg" alt="Serviço de telhados - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #1f3555, #112238)'; this.style.minHeight='220px';">
+                    <img src="https://servico24horas.com.br/assets/images-2/service/telhadista-servico9.jpg" alt="Serviço de telhados - SERV CASA JP" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #143F85, #0e2f63)'; this.style.minHeight='220px';">
                     <div class="gallery-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
                 </div>
             </div>
@@ -1479,8 +1489,8 @@
         <div class="cta-final-bg"></div>
         <div class="cta-final-content container fade-in-up">
             <h2>Precisa Resolver um Problema em Casa?</h2>
-            <p>Fale agora com a <strong>SERV CASA JP</strong> e receba atendimento rápido em João Pessoa.</p>
-            <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20gostaria%20de%20resolver%20um%20problema%20em%20casa.%20Pode%20me%20ajudar%3F" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-xl btn-pulse">
+            <p>Fale agora com a <strong>SERV CASA JP</strong> e receba atendimento rápido e orçamento grátis em João Pessoa.</p>
+            <a href="https://wa.me/5583999598581?text=Ol%C3%A1%2C%20quero%20resolver%20um%20problema%20em%20casa%20com%20or%C3%A7amento%20gr%C3%A1tis!" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-xl btn-pulse">
                 <i class="fa-brands fa-whatsapp"></i> CHAMAR NO WHATSAPP
             </a>
             <p style="margin-top: 20px; font-size: var(--font-sm); color: rgba(255,255,255,0.6);">
@@ -1560,7 +1570,7 @@
             observer.observe(el);
         });
 
-        // Smooth scroll for all anchor links (fallback for older browsers)
+        // Smooth scroll for all anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
@@ -1607,11 +1617,11 @@
             });
         }
 
-        console.log('%c🛠️ SERV CASA JP %c- Landing Page Carregada com Sucesso!',
-            'color: #f5a623; font-weight: bold; font-size: 18px;',
-            'color: #0a1628; font-weight: bold;');
-        console.log('%c📞 WhatsApp: 83 99959-8581 %c| %c📍 João Pessoa - PB',
-            'color: #25D366;', '', 'color: #0a1628;');
+        console.log('%c🛠️ SERV CASA JP %c- Landing Page Carregada!',
+            'color: #DDE025; font-weight: bold; font-size: 18px;',
+            'color: #143F85; font-weight: bold;');
+        console.log('%c📞 Orçamento Grátis: 83 99959-8581 %c| %c📍 João Pessoa - PB',
+            'color: #25D366;', '', 'color: #143F85;');
     </script>
 </body>
 </html>
