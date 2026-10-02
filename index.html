@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- Browser-safe SDK. The URL and publishable key are delivered by /api/config. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
     <style>
         *,
         *::before,
@@ -3349,24 +3351,10 @@
                 <span>Jornada<br><small>da Aprovação</small></span>
             </div>
             <img class="login-avatar" id="loginAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e2e8f0'/%3E%3Ctext x='50' y='58' font-size='40' text-anchor='middle' fill='%234a5568' font-family='sans-serif'%3E👤%3C/text%3E%3C/svg%3E" alt="Avatar">
-            <div class="login-nome" id="loginNome">Estudante</div>
-            <div class="login-sub" id="loginSub">Digite sua senha para acessar</div>
-            <div class="form-group">
-                <label for="loginSenha">Senha</label>
-                <div class="senha-wrapper">
-                    <input type="password" id="loginSenha" placeholder="Digite sua senha" autocomplete="current-password">
-                    <button class="senha-toggle" id="loginSenhaToggle" type="button" aria-label="Mostrar senha">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="login-options">
-                <a href="#" id="esqueciSenhaLink">Esqueci minha senha</a>
-            </div>
-            <button class="btn btn-primary" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Entrar</button>
-            <div class="senha-gerada" id="senhaGeradaDisplay">
-                <i class="fas fa-key"></i> Sua senha é: <strong id="senhaGeradaValor"></strong>
-            </div>
+            <div class="login-nome" id="loginNome">VULP+ Club</div>
+            <div class="login-sub" id="loginSub">Verificando sua sessão...</div>
+            <button class="btn btn-primary" id="googleLoginBtn" type="button" disabled><i class="fab fa-google"></i> Entrar com Google</button>
+            <p id="authMessage" role="status" aria-live="polite" style="min-height:20px; margin:16px 0 0; color:rgba(255,255,255,.62); font-size:.78rem;"></p>
         </div>
         <div class="login-image">
             <div class="overlay-text">
@@ -3511,6 +3499,7 @@
                 </div>
                 <div class="header-right">
                     <button class="theme-toggle" id="themeToggle" title="Alternar tema"><i class="fas fa-moon"></i></button>
+                    <button class="theme-toggle" id="logoutBtn" title="Sair da conta" aria-label="Sair da conta"><i class="fas fa-right-from-bracket"></i></button>
                     <div class="header-countdown" id="headerCountdown">
                         <span class="dias-num" id="diasNum">—</span>
                         <span class="dias-label">dias</span>
@@ -3900,7 +3889,19 @@
             // ============================================================
             // 1. ESTADO E PERSISTÊNCIA
             // ============================================================
-            const STORAGE_KEY = 'jornada_data';
+            const LEGACY_STORAGE_KEY = 'jornada_data';
+            const QG_STORAGE_KEY = 'jornada_qg_sessions';
+            const QG_CURRENT_KEY = 'jornada_qg_current_session_id';
+            const LEGACY_MIGRATION_USER_KEY = 'vulp_legacy_migrated_user_id';
+            const USER_STORAGE_PREFIX = 'vulp_user_cache';
+
+            let supabaseClient = null;
+            let currentUser = null;
+            let currentProfile = null;
+            let userStateSyncTimer = null;
+            let userStateSaveInFlight = false;
+            let userStateSyncPending = false;
+            let lastActivatedUserId = null;
 
             function getDefaultData() {
                 return {
@@ -3914,13 +3915,38 @@
                     cronograma: [],
                     cronogramaEstudos: [],
                     lembretes: [],
-                    senha: '',
                     preferencias: { somComemoracao: true },
                 };
             }
 
-            let data = loadData();
+            let data = getDefaultData();
             let usuarioLogado = false;
+
+            function userStorageKey(key) {
+                return currentUser ? `${USER_STORAGE_PREFIX}:${currentUser.id}:${key}` : key;
+            }
+
+            function normalizarDados(dataObj) {
+                const parsed = dataObj && typeof dataObj === 'object' && !Array.isArray(dataObj) ? dataObj : {};
+                const def = getDefaultData();
+                for (let key in def) {
+                    if (!(key in parsed)) parsed[key] = def[key];
+                }
+                // The former local password is intentionally never migrated or persisted.
+                delete parsed.senha;
+                if (!parsed.preferencias) parsed.preferencias = { somComemoracao: true };
+                if (parsed.preferencias.somComemoracao === undefined) parsed.preferencias.somComemoracao = true;
+                if (!Array.isArray(parsed.disciplinas)) parsed.disciplinas = [];
+                parsed.disciplinas.forEach(d => {
+                    if (d.horasEstudadas === undefined) d.horasEstudadas = 0;
+                });
+                if (!Array.isArray(parsed.cronograma)) parsed.cronograma = [];
+                if (!Array.isArray(parsed.cronogramaEstudos)) parsed.cronogramaEstudos = [];
+                parsed.cronogramaEstudos = migrateCronogramaEstudos(parsed.cronogramaEstudos);
+                if (!Array.isArray(parsed.lembretes)) parsed.lembretes = [];
+                migrateLinksIfNeeded(parsed);
+                return parsed;
+            }
 
             function migrateLinksIfNeeded(dataObj) {
                 if (dataObj.links && dataObj.links.length > 0 && (!dataObj.categorias || dataObj.categorias.length === 0)) {
@@ -3958,33 +3984,34 @@
                 });
             }
 
-            function loadData() {
+            function loadData(storageKey = userStorageKey(LEGACY_STORAGE_KEY)) {
                 try {
-                    const raw = localStorage.getItem(STORAGE_KEY);
+                    const raw = localStorage.getItem(storageKey);
                     if (raw) {
-                        const parsed = JSON.parse(raw);
-                        const def = getDefaultData();
-                        for (let key in def) {
-                            if (!(key in parsed)) parsed[key] = def[key];
-                        }
-                        if (!parsed.preferencias) parsed.preferencias = { somComemoracao: true };
-                        if (parsed.preferencias.somComemoracao === undefined) parsed.preferencias.somComemoracao = true;
-                        parsed.disciplinas.forEach(d => {
-                            if (d.horasEstudadas === undefined) d.horasEstudadas = 0;
-                        });
-                        if (!parsed.cronograma) parsed.cronograma = [];
-                        if (!parsed.cronogramaEstudos) parsed.cronogramaEstudos = [];
-                        parsed.cronogramaEstudos = migrateCronogramaEstudos(parsed.cronogramaEstudos);
-                        if (!parsed.lembretes) parsed.lembretes = [];
-                        migrateLinksIfNeeded(parsed);
-                        return parsed;
+                        return normalizarDados(JSON.parse(raw));
                     }
                 } catch (e) { console.warn('Erro ao carregar dados', e); }
                 return getDefaultData();
             }
 
+            function removerSenhaLegadaLocal() {
+                try {
+                    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+                    if (!raw) return;
+                    const legacy = JSON.parse(raw);
+                    if (legacy && typeof legacy === 'object' && Object.hasOwn(legacy, 'senha')) {
+                        delete legacy.senha;
+                        localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacy));
+                    }
+                } catch (error) {
+                    console.warn('Não foi possível remover a senha local antiga.', error);
+                }
+            }
+
             function saveData() {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                delete data.senha;
+                localStorage.setItem(userStorageKey(LEGACY_STORAGE_KEY), JSON.stringify(data));
+                scheduleUserStateSync();
             }
 
             // ============================================================
@@ -4044,15 +4071,6 @@
                 if (pct >= 60) return '#2563eb';
                 if (pct >= 40) return '#d97706';
                 return '#dc2626';
-            }
-
-            function gerarSenha() {
-                const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-                const numeros = '0123456789';
-                let senha = '';
-                for (let i = 0; i < 4; i++) senha += letras.charAt(Math.floor(Math.random() * letras.length));
-                for (let i = 0; i < 4; i++) senha += numeros.charAt(Math.floor(Math.random() * numeros.length));
-                return senha;
             }
 
             function escapeHtml(str) {
@@ -4735,15 +4753,7 @@
                 const loginAvatar = document.getElementById('loginAvatar');
                 if (data.usuario.foto) loginAvatar.src = data.usuario.foto;
                 else loginAvatar.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23e2e8f0"/%3E%3Ctext x="50" y="58" font-size="40" text-anchor="middle" fill="%234a5568" font-family="sans-serif"%3E👤%3C/text%3E%3C/svg%3E';
-                document.getElementById('loginNome').textContent = data.usuario.nome || 'Estudante';
-                const senhaDisplay = document.getElementById('senhaGeradaDisplay');
-                const senhaValor = document.getElementById('senhaGeradaValor');
-                if (data.senha) {
-                    senhaValor.textContent = data.senha;
-                    senhaDisplay.classList.add('show');
-                } else {
-                    senhaDisplay.classList.remove('show');
-                }
+                document.getElementById('loginNome').textContent = currentProfile?.nome || data.usuario.nome || 'VULP+ Club';
 
                 const somBtn = document.getElementById('toggleSomBtn');
                 if (somBtn) {
@@ -5934,19 +5944,16 @@
                         imported.cronogramaEstudos = migrateCronogramaEstudos(imported.cronogramaEstudos);
                         if (!imported.lembretes) imported.lembretes = [];
                         migrateLinksIfNeeded(imported);
-                        data = imported;
+                        data = normalizarDados(imported);
                         if (imported._qg) {
-                            qgSessions = imported._qg.sessions || [];
+                            qgSessions = Array.isArray(imported._qg.sessions) ? imported._qg.sessions : [];
                             qgCurrentSessionId = imported._qg.currentSessionId || null;
-                            salvarQGSessions();
                         }
                         saveData(); renderAll();
                         if (qgCurrentSessionId) carregarSessaoQG(qgCurrentSessionId);
                         else criarSessaoQG([]);
-                        document.getElementById('loginOverlay').classList.remove('hidden');
-                        usuarioLogado = false;
                         renderConfiguracoes();
-                        toast('Dados importados com sucesso! Faça login novamente.', 'success');
+                        toast('Dados importados e agendados para sincronização.', 'success');
                     } catch (err) {
                         toast('Erro ao ler o arquivo. Verifique o formato.', 'error');
                         console.error(err);
@@ -5956,54 +5963,298 @@
             }
 
             // ============================================================
-            // 19. LOGIN
+            // 19. AUTENTICAÇÃO SUPABASE E SINCRONIZAÇÃO POR USUÁRIO
             // ============================================================
-            function inicializarLogin() {
-                if (!data.senha) { data.senha = gerarSenha(); saveData(); renderConfiguracoes(); }
-                const senhaDisplay = document.getElementById('senhaGeradaDisplay');
-                const senhaValor = document.getElementById('senhaGeradaValor');
-                if (data.senha) { senhaValor.textContent = data.senha; senhaDisplay.classList.add('show'); }
+            let authControlsBound = false;
+            let authActivationPromise = null;
 
-                document.getElementById('loginSenhaToggle').addEventListener('click', function() {
-                    const input = document.getElementById('loginSenha');
-                    const icon = this.querySelector('i');
-                    if (input.type === 'password') { input.type = 'text'; icon.className = 'fas fa-eye-slash'; }
-                    else { input.type = 'password'; icon.className = 'fas fa-eye'; }
-                });
+            function setAuthMessage(message, isError = false) {
+                const messageEl = document.getElementById('authMessage');
+                const subtitle = document.getElementById('loginSub');
+                messageEl.textContent = message || '';
+                messageEl.style.color = isError ? '#fca5a5' : 'rgba(255,255,255,.62)';
+                subtitle.textContent = isError ? 'Não foi possível concluir o acesso' : 'Acesse com segurança usando sua conta Google';
+            }
 
-                document.getElementById('loginBtn').addEventListener('click', function() {
-                    const senhaInput = document.getElementById('loginSenha').value;
-                    if (!senhaInput) { toast('Digite sua senha.', 'error'); return; }
-                    if (senhaInput === data.senha) {
-                        usuarioLogado = true;
-                        document.getElementById('loginOverlay').classList.add('hidden');
-                        renderAll();
-                        toast('Bem-vindo de volta!', 'success');
-                    } else {
-                        toast('Senha incorreta.', 'error');
-                        document.getElementById('loginSenha').value = '';
-                        document.getElementById('loginSenha').focus();
+            function showLogin(message = '', isError = false) {
+                usuarioLogado = false;
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                setAuthMessage(message, isError);
+            }
+
+            function userFacingError(error, fallback) {
+                console.error(fallback, error);
+                return fallback;
+            }
+
+            async function configurarSupabase() {
+                if (supabaseClient) return supabaseClient;
+                if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+                    throw new Error('O cliente do Supabase não carregou. Verifique sua conexão e tente novamente.');
+                }
+
+                const injectedConfig = window.VULP_SUPABASE_CONFIG;
+                let config = injectedConfig;
+                if (!config) {
+                    const response = await fetch('/api/config', {
+                        headers: { 'Accept': 'application/json' },
+                        cache: 'no-store'
+                    });
+                    if (!response.ok) {
+                        throw new Error('O ambiente de autenticação ainda não foi configurado.');
+                    }
+                    config = await response.json();
+                }
+                if (!config?.url || !config?.publishableKey) {
+                    throw new Error('A configuração pública do Supabase está incompleta.');
+                }
+
+                supabaseClient = window.supabase.createClient(config.url, config.publishableKey, {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true,
+                        detectSessionInUrl: true
                     }
                 });
+                return supabaseClient;
+            }
 
-                document.getElementById('loginSenha').addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-                });
+            function getOAuthCallbackError() {
+                const query = new URLSearchParams(window.location.search);
+                const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+                const description = query.get('error_description') || hash.get('error_description');
+                const error = query.get('error') || hash.get('error');
+                if (!error) return null;
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return description || 'O login com Google foi cancelado ou não pôde ser concluído.';
+            }
 
-                document.getElementById('esqueciSenhaLink').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    if (data.senha) toast(`Sua senha é: ${data.senha}`, 'info');
-                    else toast('Nenhuma senha definida.', 'info');
-                });
+            function salvarCacheDoUsuario() {
+                if (!currentUser) return;
+                localStorage.setItem(userStorageKey(LEGACY_STORAGE_KEY), JSON.stringify(data));
+                localStorage.setItem(userStorageKey(QG_STORAGE_KEY), JSON.stringify(qgSessions));
+                if (qgCurrentSessionId) localStorage.setItem(userStorageKey(QG_CURRENT_KEY), qgCurrentSessionId);
+                else localStorage.removeItem(userStorageKey(QG_CURRENT_KEY));
+            }
 
-                renderConfiguracoes();
+            function carregarQGDoStorage(storageKey, currentKey) {
+                try {
+                    const raw = localStorage.getItem(storageKey);
+                    qgSessions = raw ? JSON.parse(raw) : [];
+                    if (!Array.isArray(qgSessions)) qgSessions = [];
+                } catch (error) {
+                    console.warn('Não foi possível carregar o histórico local do QG.', error);
+                    qgSessions = [];
+                }
+                qgCurrentSessionId = localStorage.getItem(currentKey) || null;
+            }
+
+            async function persistirEstadoDoUsuario(throwOnError = false) {
+                if (!supabaseClient || !currentUser) return;
+                if (userStateSaveInFlight) {
+                    userStateSyncPending = true;
+                    return;
+                }
+                userStateSaveInFlight = true;
+                userStateSyncPending = false;
+                const snapshot = JSON.parse(JSON.stringify(data));
+                delete snapshot.senha;
+                const qgSnapshot = {
+                    sessions: JSON.parse(JSON.stringify(qgSessions)),
+                    currentSessionId: qgCurrentSessionId
+                };
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('user_app_state')
+                        .upsert({
+                            user_id: currentUser.id,
+                            app_data: snapshot,
+                            qg_data: qgSnapshot,
+                            schema_version: 1
+                        }, { onConflict: 'user_id' });
+                    if (error) throw error;
+                    salvarCacheDoUsuario();
+                } catch (error) {
+                    userFacingError(error, 'Não foi possível sincronizar os dados no Supabase.');
+                    setAuthMessage('Suas alterações ficaram salvas neste dispositivo e serão sincronizadas quando a conexão voltar.', true);
+                    if (throwOnError) throw error;
+                } finally {
+                    userStateSaveInFlight = false;
+                    if (userStateSyncPending) scheduleUserStateSync();
+                }
+            }
+
+            function scheduleUserStateSync() {
+                if (!supabaseClient || !currentUser) return;
+                userStateSyncPending = true;
+                if (userStateSyncTimer) window.clearTimeout(userStateSyncTimer);
+                userStateSyncTimer = window.setTimeout(() => {
+                    userStateSyncTimer = null;
+                    persistirEstadoDoUsuario();
+                }, 450);
+            }
+
+            async function carregarEstadoDoUsuario() {
+                const { data: remoteState, error } = await supabaseClient
+                    .from('user_app_state')
+                    .select('app_data, qg_data')
+                    .eq('user_id', currentUser.id)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (remoteState) {
+                    data = normalizarDados(remoteState.app_data);
+                    const qgData = remoteState.qg_data || {};
+                    qgSessions = Array.isArray(qgData.sessions) ? qgData.sessions : [];
+                    qgCurrentSessionId = qgData.currentSessionId || null;
+                    salvarCacheDoUsuario();
+                    if (!localStorage.getItem(LEGACY_MIGRATION_USER_KEY)) {
+                        localStorage.setItem(LEGACY_MIGRATION_USER_KEY, currentUser.id);
+                    }
+                    return;
+                }
+
+                const legacyOwner = localStorage.getItem(LEGACY_MIGRATION_USER_KEY);
+                if (!legacyOwner) {
+                    // One-time migration: only the first authenticated account in this browser
+                    // receives the former shared local data. Later accounts start empty.
+                    data = loadData(LEGACY_STORAGE_KEY);
+                    carregarQGDoStorage(QG_STORAGE_KEY, QG_CURRENT_KEY);
+                } else {
+                    data = loadData();
+                    carregarQGDoStorage(userStorageKey(QG_STORAGE_KEY), userStorageKey(QG_CURRENT_KEY));
+                }
+
+                await persistirEstadoDoUsuario(true);
+                if (!legacyOwner) localStorage.setItem(LEGACY_MIGRATION_USER_KEY, currentUser.id);
+            }
+
+            function aplicarPerfilNoEstado() {
+                if (!data.usuario.nome && currentProfile?.nome) data.usuario.nome = currentProfile.nome;
+                if (!data.usuario.foto && currentProfile?.avatar_url) data.usuario.foto = currentProfile.avatar_url;
+                salvarCacheDoUsuario();
+                scheduleUserStateSync();
+            }
+
+            async function ativarSessao(session) {
+                if (!session?.user) return;
+                if (usuarioLogado && lastActivatedUserId === session.user.id) return;
+                if (authActivationPromise) return authActivationPromise;
+
+                authActivationPromise = (async () => {
+                    currentUser = session.user;
+                    setAuthMessage('Carregando seu perfil e seus dados...');
+                    const { data: profile, error: profileError } = await supabaseClient.rpc('record_profile_login');
+                    if (profileError) throw profileError;
+                    currentProfile = profile;
+                    await carregarEstadoDoUsuario();
+                    aplicarPerfilNoEstado();
+                    initQG();
+                    usuarioLogado = true;
+                    lastActivatedUserId = currentUser.id;
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    renderAll();
+                })();
+
+                try {
+                    await authActivationPromise;
+                } finally {
+                    authActivationPromise = null;
+                }
+            }
+
+            async function entrarComGoogle() {
+                const button = document.getElementById('googleLoginBtn');
+                button.disabled = true;
+                setAuthMessage('Redirecionando para o Google...');
+                try {
+                    const { error } = await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: `${window.location.origin}${window.location.pathname}` }
+                    });
+                    if (error) throw error;
+                } catch (error) {
+                    button.disabled = false;
+                    setAuthMessage(userFacingError(error, 'Não foi possível iniciar o login com Google. Tente novamente.'), true);
+                }
+            }
+
+            async function sairDaConta() {
+                const button = document.getElementById('logoutBtn');
+                button.disabled = true;
+                try {
+                    await persistirEstadoDoUsuario();
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) throw error;
+                } catch (error) {
+                    button.disabled = false;
+                    toast(userFacingError(error, 'Não foi possível encerrar a sessão. Tente novamente.'), 'error');
+                }
+            }
+
+            function limparSessaoLocal(message = 'Sessão encerrada.') {
+                if (userStateSyncTimer) window.clearTimeout(userStateSyncTimer);
+                userStateSyncTimer = null;
+                userStateSyncPending = false;
+                currentUser = null;
+                currentProfile = null;
+                lastActivatedUserId = null;
+                data = getDefaultData();
+                qgSessions = [];
+                qgCurrentSessionId = null;
+                showLogin(message);
+                document.getElementById('googleLoginBtn').disabled = false;
+            }
+
+            async function iniciarAutenticacao() {
+                showLogin('Verificando sua sessão...');
+                try {
+                    const client = await configurarSupabase();
+                    client.auth.onAuthStateChange((event, session) => {
+                        window.setTimeout(() => {
+                            if (event === 'SIGNED_OUT') limparSessaoLocal();
+                            if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                                ativarSessao(session).catch(error => {
+                                    showLogin(userFacingError(error, 'Não foi possível carregar seu perfil. Tente novamente.'), true);
+                                });
+                            }
+                        }, 0);
+                    });
+
+                    const callbackError = getOAuthCallbackError();
+                    if (callbackError) {
+                        showLogin(callbackError, true);
+                        document.getElementById('googleLoginBtn').disabled = false;
+                        return;
+                    }
+
+                    const { data: sessionData, error } = await client.auth.getSession();
+                    if (error) throw error;
+                    if (sessionData.session) await ativarSessao(sessionData.session);
+                    else {
+                        showLogin('Entre para acessar sua jornada.');
+                        document.getElementById('googleLoginBtn').disabled = false;
+                    }
+                } catch (error) {
+                    showLogin(userFacingError(error, 'O acesso ainda não está configurado. Consulte a configuração do VULP+ Club.'), true);
+                    document.getElementById('googleLoginBtn').disabled = true;
+                }
+            }
+
+            function inicializarLogin() {
+                if (!authControlsBound) {
+                    document.getElementById('googleLoginBtn').addEventListener('click', entrarComGoogle);
+                    document.getElementById('logoutBtn').addEventListener('click', sairDaConta);
+                    authControlsBound = true;
+                }
+                iniciarAutenticacao();
             }
 
             // ============================================================
             // 20. QG DAS QUESTÕES
             // ============================================================
-            const QG_STORAGE_KEY = 'jornada_qg_sessions';
-            const QG_CURRENT_KEY = 'jornada_qg_current_session_id';
             const SOM_APLAUSOS_URL = 'https://res.cloudinary.com/duu9q94cf/video/upload/v1789405665/Som_De_Aplausos_shorts_efeitosonoro_aplauso_aplausos_-_Sounds_vitoriano_youtube_1_hnth4b.mp3';
 
             let qgSessions = [];
@@ -6014,17 +6265,12 @@
             let celebracaoTimeout = null;
 
             function carregarQGSessions() {
-                try {
-                    const raw = localStorage.getItem(QG_STORAGE_KEY);
-                    qgSessions = raw ? JSON.parse(raw) : [];
-                } catch (e) { qgSessions = []; }
-                qgCurrentSessionId = localStorage.getItem(QG_CURRENT_KEY) || null;
+                carregarQGDoStorage(userStorageKey(QG_STORAGE_KEY), userStorageKey(QG_CURRENT_KEY));
             }
 
             function salvarQGSessions() {
-                localStorage.setItem(QG_STORAGE_KEY, JSON.stringify(qgSessions));
-                if (qgCurrentSessionId) localStorage.setItem(QG_CURRENT_KEY, qgCurrentSessionId);
-                else localStorage.removeItem(QG_CURRENT_KEY);
+                salvarCacheDoUsuario();
+                scheduleUserStateSync();
             }
 
             function criarSessaoQG(questoes = []) {
@@ -6074,8 +6320,8 @@
                 if (!confirm('Última confirmação: todos os dados de questões serão perdidos. Continuar?')) return;
                 qgSessions = [];
                 qgCurrentSessionId = null;
-                localStorage.removeItem(QG_STORAGE_KEY);
-                localStorage.removeItem(QG_CURRENT_KEY);
+                localStorage.removeItem(userStorageKey(QG_STORAGE_KEY));
+                localStorage.removeItem(userStorageKey(QG_CURRENT_KEY));
                 criarSessaoQG([]);
                 renderizarQG();
                 toast('Histórico de questões limpo com sucesso!', 'success');
@@ -6605,8 +6851,8 @@
             // 22. INICIALIZAÇÃO
             // ============================================================
             function iniciarAplicacao() {
-                data = loadData();
-                if (!data.senha) { data.senha = gerarSenha(); saveData(); }
+                data = getDefaultData();
+                removerSenhaLegadaLocal();
 
                 const initialPage = document.getElementById('page-dashboard');
                 if (initialPage) {
@@ -6617,7 +6863,6 @@
 
                 renderAll();
                 inicializarLogin();
-                initQG();
 
                 // Cronômetro — Nova UI
                 document.getElementById('cronStartBtnNew').addEventListener('click', iniciarCronometro);
